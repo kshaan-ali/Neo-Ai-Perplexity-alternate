@@ -16,16 +16,18 @@ const firecrawlPro = new Firecrawl({
 
 
 
-export const search=async (query: string) => {
-  const results:any = await firecrawlFree.search(query, {
-    limit: 5,
+export const search=async (query: string, limit = 5) => {
+  const client = firecrawlApiKey ? firecrawlPro : firecrawlFree;
+  const results:any = await client.search(query, {
+    limit,
     scrapeOptions: { formats: ['markdown'] } // true for search with scraping 
   });
-  const cleanedResults: CleanedScrapedContent[]  = results.web.map((i: any) => {    
+  const webResults = Array.isArray(results?.web) ? results.web : [];
+  const cleanedResults: CleanedScrapedContent[]  = webResults.map((i: any) => {    
         return {
-            url: i.url,
-            title: i.title,
-            markdown: i.markdown || ''
+            url: i.url || '',
+            title: i.title || i.url || 'Untitled',
+            markdown: (i.markdown || '').slice(0, 8000)
         }
     })
     return cleanedResults;
